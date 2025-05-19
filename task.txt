@@ -1,0 +1,113 @@
+AI-supported lightweight code editor task
+1. Overview and Goals
+The goal is to create a lightweight code editor that:
+    • Displays code files in a navigable file structure.
+    • Includes a chat interface to interact with an AI assistant for code suggestions, debugging, and explanations.
+    • Supports reading and editing files.
+    • Enables internet searches to fetch additional documentation or examples.
+    • Executes Python code by invoking the Python interpreter and captures runtime errors or debugging messages for further AI feedback.
+    • Uses Streamlit as the framework for the user interface.
+    • Provides a clear architectural plan with defined functions, classes, and their interactions.
+    • Integrates system prompts and file contexts into AI prompts for complex tasks.
+2. Functional Requirements
+    • File Display & Management:
+        ◦ Features: 
+            ▪ Browse a project directory and list code files (e.g., .py, .js, .html).
+            ▪ Open, edit, and save files within the editor.
+        ◦ Classes/Functions: 
+            ▪ FileManager: Handles directory traversal, file reading, and saving.
+            ▪ FileViewer: UI component in Streamlit to display file contents.
+    • Chat Interface for AI Interaction:
+        ◦ Features: 
+            ▪ A chat widget where users can prompt the AI.
+            ▪ Display conversation history between the user and the AI.
+            ▪ Allow the AI to suggest code modifications, answer questions, or help with debugging.
+        ◦ Classes/Functions: 
+            ▪ ChatManager: Manages chat sessions, history, and interfaces with the AI API.
+            ▪ SystemPrompter: Prepares system-level prompts (including file context) to guide AI responses for more complex tasks.
+    • File I/O Capabilities:
+        ◦ Features: 
+            ▪ Read and load file contents into the editor.
+            ▪ Optionally support file uploads/downloads.
+        ◦ Classes/Functions: 
+            ▪ Integrated within the FileManager and FileViewer components.
+    • Internet Search Integration:
+        ◦ Features: 
+            ▪ Mechanism to perform internet searches from within the editor.
+            ▪ Display search results or summaries relevant to the query.
+        ◦ Classes/Functions: 
+            ▪ SearchManager: Handles search requests, integrates with external APIs, and processes results.
+    • Code Execution and Debugging:
+        ◦ Features: 
+            ▪ Invoke the Python interpreter to run code.
+            ▪ Capture output, errors, and exceptions.
+            ▪ Provide feedback (debugging messages, error logs) to the AI chat.
+        ◦ Classes/Functions: 
+            ▪ ExecutionEngine: Uses Python’s subprocess module to execute code.
+            ▪ DebugLogger: Captures and formats output and error messages.
+    • User Interface (Streamlit):
+        ◦ Features: 
+            ▪ A sidebar for file navigation.
+            ▪ A main pane for code display and editing.
+            ▪ A dedicated chat window for AI interaction.
+            ▪ An area for displaying code execution results and debugging messages.
+        ◦ Classes/Functions: 
+            ▪ UI functions built with Streamlit widgets (st.sidebar, st.text_area, st.button, etc.).
+            ▪ Functions to update UI components based on interactions with backend modules.
+3. Architectural Plan and Component Interactions
+Before diving into implementation, developers should draft a small architectural diagram or plan. This plan should include:
+    • Modules and Their Interactions:
+        ◦ Frontend (Streamlit UI): 
+            ▪ Components: File navigation sidebar, code editor pane, chat interface, output display.
+            ▪ Interactions: 
+                • User selects a file → UI calls FileManager to load file contents.
+                • User enters a chat message → UI sends it to ChatManager, which adds system prompts (including file context if needed) via SystemPrompter.
+                • User triggers code execution → UI invokes ExecutionEngine to run the code and displays output using DebugLogger.
+    • Backend Modules:
+        ◦ FileManager: 
+            ▪ Functions: list_files(), read_file(file_path), save_file(file_path, content).
+        ◦ ChatManager: 
+            ▪ Functions: send_message(message), receive_response().
+            ▪ Interaction: Integrates with AI services, appending system prompts and file context to user queries.
+        ◦ SystemPrompter: 
+            ▪ Functions: generate_prompt(user_message, file_context).
+            ▪ Role: Embeds file contents or contextual information into AI prompts to enhance response accuracy.
+        ◦ SearchManager: 
+            ▪ Functions: perform_search(query), parse_results(raw_results).
+        ◦ ExecutionEngine: 
+            ▪ Functions: run_code(code), capture_output().
+        ◦ DebugLogger: 
+            ▪ Functions: log_error(error_message), format_debug_output(output).
+    • Interaction Flow Example:
+        1. File Loading: User selects a file → FileManager retrieves content → UI updates file editor.
+        2. Complex Task Prompt: User requests a code enhancement → ChatManager calls SystemPrompter to create a prompt including recent file content → AI returns suggestions.
+        3. Code Execution: User executes code → ExecutionEngine runs code → DebugLogger captures output → UI displays results and sends errors back to ChatManager for AI analysis.
+4. System Prompts & File Context Integration
+    • System Prompts:
+        ◦ Define default instructions for the AI (e.g., “You are a code assistant helping to debug Python code.”).
+        ◦ Allow dynamic system prompts based on the user’s current task.
+        ◦ Include safety or sandboxing instructions when executing code.
+    • File Context in AI Prompts:
+        ◦ When users request complex tasks (e.g., code optimization or debugging), automatically include relevant file content or snippets.
+        ◦ Develop a mechanism to summarize or selectively extract file context to avoid overwhelming the AI prompt.
+        ◦ The SystemPrompter module should manage this context inclusion by taking parameters such as file name, recent changes, or highlighted code sections.
+5. Development Milestones
+    1. Project Setup:
+        ◦ Initialize the project and environment.
+        ◦ Set up Streamlit and install required dependencies.
+    2. UI Development:
+        ◦ Build the sidebar, main code editor, chat interface, and output display using Streamlit.
+        ◦ Ensure dynamic updating based on user interactions.
+    3. Backend Module Development:
+        ◦ Develop the FileManager and FileViewer for file handling.
+        ◦ Implement ChatManager and SystemPrompter for AI interaction.
+        ◦ Create the SearchManager to handle internet searches.
+        ◦ Build the ExecutionEngine and DebugLogger for code execution and debugging.
+    4. Integration and Interaction:
+        ◦ Connect UI actions with backend functions.
+        ◦ Ensure that file contexts and system prompts are correctly injected into AI queries.
+        ◦ Validate the complete flow from file loading → chat interaction → code execution → debugging feedback.
+    5. Testing, Debugging & Documentation:
+        ◦ Write tests for file operations, AI interactions, search integration, and code execution.
+        ◦ Gather user feedback, document the architecture and usage, and iterate on improvements.
+        ◦ Plan for secure code execution environments and sandboxing.
