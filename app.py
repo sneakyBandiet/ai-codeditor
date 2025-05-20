@@ -1,7 +1,6 @@
 # app.py
 # -*- coding: utf-8 -*-
 import streamlit as st
-from dotenv import load_dotenv
 import os
 import re
 import json
@@ -12,7 +11,6 @@ from backend.file_manager import FileManager
 
 # === Konfiguration & Init ===
 st.set_page_config(page_title="Code-Generator mit Claude", layout="wide")
-load_dotenv()
 
 # === Session State ===
 if "messages" not in st.session_state:
@@ -30,7 +28,7 @@ with st.sidebar:
     if not input_api_key:
         st.error("Bitte gib einen gültigen Anthropic API-Schlüssel ein.")
     model = st.selectbox("Claude-Modell", ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"])
-    system_prompt = st.text_area("System-Prompt", value="Du bist ein hilfreicher KI-Assistent, der Python-Code generiert...", height=200)
+    system_prompt = st.text_area("System-Prompt", value="Du bist ein hilfreicher KI-Assistent, der Python-Code generiert...", height=200, key="system_prompt_input")
     auto_execute = st.checkbox("Code automatisch in Editor übernehmen", value=True)
 
     if st.session_state.messages:
@@ -49,49 +47,55 @@ with st.sidebar:
             st.session_state.clear()
             st.rerun()
 
+# === Unified Code Editor ===
+st.markdown("---")
+st.header("🐍 Python-Editor & Ausführung")
+
+if "current_file" in st.session_state:
+    st.markdown(f"📄 Aktuelle Datei: `{st.session_state.current_file}`")
+
+editor_input = st.text_area("📝 Code bearbeiten", value=st.session_state.editor_code, height=300, key="editor_text_area")
+
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("💾 Speichern", use_container_width=True):
+        try:
+            if "current_file" in st.session_state:
+                file_manager.save_file(st.session_state.current_file, editor_input)
+                st.session_state.editor_code = editor_input
+                st.success("Datei gespeichert.")
+            else:
+                st.warning("Keine Datei ausgewählt.")
+        except Exception as e:
+            st.error(f"Fehler beim Speichern: {e}")
+
+with col2:
+    if st.button("▶️ Ausführen", use_container_width=True, type="primary"):
+        st.session_state.editor_code = editor_input
+        result = engine.run_code(editor_input)
+        st.session_state.last_execution_result = result
+        st.rerun()
+
+# === Output Display ===
+if st.session_state.last_execution_result:
+    result = st.session_state.last_execution_result
+    if result["success"]:
+        st.success("✅ Code erfolgreich ausgeführt")
+        st.text_area("Ausgabe:", value=result["output"], height=150, disabled=True, key="execution_output_area")
+    else:
+        st.error("❌ Fehler bei der Ausführung")
+        st.text_area("Fehlermeldung:", value=result["error"], height=150, disabled=True, key="execution_error_area")
+        if st.button("🔄 Fehler an Claude senden"):
+            feedback = engine.create_error_feedback(editor_input, result["error"])
+            st.session_state.messages.append({"role": "user", "content": feedback})
+            st.session_state.last_execution_result = None
+            st.rerun()
+
+
 # === Hauptinhalt ===
 st.title("Code-Generator mit Claude")
 chat_manager = ChatManager(input_api_key, model, system_prompt)
 engine = ExecutionEngine()
-
-# === File Navigation ===
-st.sidebar.subheader("Dateien im Projekt")
-project_dir = st.sidebar.text_input("Projektordner", value=".")
-file_manager = FileManager(root=project_dir)
-
-try:
-    files = file_manager.list_files()
-    selected_file = st.sidebar.selectbox("Datei auswählen", files)
-
-    if selected_file:
-        file_content = file_manager.read_file(selected_file)
-        st.session_state.editor_code = file_content
-        st.session_state.current_file = selected_file
-except Exception as e:
-    st.sidebar.error(f"Fehler beim Laden der Dateien: {e}")
-
-# === Code Editor ===
-if "current_file" in st.session_state:
-    st.markdown(f"📄 Aktuelle Datei: `{st.session_state.current_file}`")
-
-st.session_state.editor_code = st.text_area(
-    "Python-Code bearbeiten:",
-    value=st.session_state.editor_code,
-    height=250,
-    key="editor_text_area"
-)
-
-
-if st.button("💾 Speichern", use_container_width=True):
-    try:
-        if "current_file" in st.session_state:
-            file_manager.save_file(st.session_state.current_file, st.session_state.editor_code)
-            st.success("Datei gespeichert.")
-        else:
-            st.warning("Keine Datei ausgewählt.")
-    except Exception as e:
-        st.error(f"Fehler beim Speichern: {e}")
-
 
 # === Chat anzeigen ===
 st.header("💬 Chat mit Claude")
@@ -133,26 +137,18 @@ if user_input:
                 st.session_state.editor_code = match.group(1)
         st.rerun()
 
-# === Code Execution Bereich ===
-st.markdown("---")
-st.header("🐍 Python-Interpreter")
-st.session_state.editor_code = st.text_area("Python-Code bearbeiten:", value=st.session_state.editor_code, height=250)
+# === File Navigation ===
+st.sidebar.subheader("Dateien im Projekt")
+project_dir = st.sidebar.text_input("Projektordner", value=".")
+file_manager = FileManager(root=project_dir)
 
-if st.button("▶️ Code ausführen", use_container_width=True, type="primary"):
-    result = engine.run_code(st.session_state.editor_code)
-    st.session_state.last_execution_result = result
-    st.rerun()
+try:
+    files = file_manager.list_files()
+    selected_file = st.sidebar.selectbox("Datei auswählen", files)
 
-if st.session_state.last_execution_result:
-    result = st.session_state.last_execution_result
-    if result["success"]:
-        st.success("✅ Code erfolgreich ausgeführt")
-        st.text_area("Ausgabe:", value=result["output"], height=150, disabled=True, key="execution_output_area")
-    else:
-        st.error("❌ Fehler bei der Ausführung")
-        st.text_area("Fehlermeldung:", value=result["error"], height=150, disabled=True, key="execution_error_area")
-        if st.button("🔄 Fehler an Claude senden"):
-            feedback = engine.create_error_feedback(st.session_state.editor_code, result["error"])
-            st.session_state.messages.append({"role": "user", "content": feedback})
-            st.session_state.last_execution_result = None
-            st.rerun()
+    if selected_file:
+        file_content = file_manager.read_file(selected_file)
+        st.session_state.editor_code = file_content
+        st.session_state.current_file = selected_file
+except Exception as e:
+    st.sidebar.error(f"Fehler beim Laden der Dateien: {e}")
