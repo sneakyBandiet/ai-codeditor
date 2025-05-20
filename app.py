@@ -1,154 +1,112 @@
 # app.py
-# -*- coding: utf-8 -*-
 import streamlit as st
 import os
-import re
 import json
 import datetime
 from backend.chat_manager import ChatManager
 from backend.execution_engine import ExecutionEngine
 from backend.file_manager import FileManager
+from tkinter import Tk, filedialog
 
-# === Konfiguration & Init ===
+from frontend.editor import show_editor
+from frontend.chat import show_chat_interface
+from frontend.execution import show_execution_area
+from frontend.file_browser import show_file_navigation
+from frontend.search import show_search_bar
+
 st.set_page_config(page_title="Code-Generator mit Claude", layout="wide")
 
-# === Session State ===
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-if "editor_code" not in st.session_state:
-    st.session_state.editor_code = ""
-if "last_execution_result" not in st.session_state:
-    st.session_state.last_execution_result = None
+def initialize_session():
+    defaults = {
+        "messages": [],
+        "editor_code": "",
+        "last_execution_result": None,
+        "project_folder": None
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
 
-# === API & Settings Sidebar ===
-with st.sidebar:
-    st.header("Einstellungen")
+def settings_sidebar():
+    with st.sidebar:
+        st.header("Einstellungen")
 
-    input_api_key = st.text_input("Anthropic API-Schlüssel", value=os.getenv("ANTHROPIC_API_KEY", ""), type="password")
-    if not input_api_key:
-        st.error("Bitte gib einen gültigen Anthropic API-Schlüssel ein.")
-    model = st.selectbox("Claude-Modell", ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"])
-    system_prompt = st.text_area("System-Prompt", value="Du bist ein hilfreicher KI-Assistent, der Python-Code generiert...", height=200, key="system_prompt_input")
-    auto_execute = st.checkbox("Code automatisch in Editor übernehmen", value=True)
+        input_api_key = st.text_input("Anthropic API-Schlüssel", value=os.getenv("ANTHROPIC_API_KEY", ""), type="password")
+        if not input_api_key:
+            st.error("Bitte gib einen gültigen Anthropic API-Schlüssel ein.")
 
-    if st.session_state.messages:
+        model = st.selectbox("Claude-Modell", ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"])
+        system_prompt = st.text_area("System-Prompt", value="Du bist ein hilfreicher KI-Assistent, der Python-Code generiert...", height=200, key="system_prompt_input")
+        auto_execute = st.checkbox("Code automatisch in Editor übernehmen", value=True)
+
+        if st.session_state.messages:
+            st.markdown("---")
+            st.subheader("Chat-Verlauf")
+            export_data = {
+                "system_prompt": system_prompt,
+                "model": model,
+                "messages": st.session_state.messages,
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            chat_json = json.dumps(export_data, indent=2)
+            st.download_button("Chat-Verlauf herunterladen", chat_json, file_name="chat_history.json")
+            if st.button("Chat-Verlauf löschen"):
+                st.session_state.clear()
+                st.rerun()
+
+        return input_api_key, model, system_prompt, auto_execute
+
+def project_folder_sidebar():
+    with st.sidebar:
         st.markdown("---")
-        st.subheader("Chat-Verlauf")
-        export_data = {
-            "system_prompt": system_prompt,
-            "model": model,
-            "messages": st.session_state.messages,
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }
-        chat_json = json.dumps(export_data, indent=2)
-        b64 = json.dumps(export_data).encode("utf-8")
-        st.download_button("Chat-Verlauf herunterladen", chat_json, file_name="chat_history.json")
-        if st.button("Chat-Verlauf löschen"):
-            st.session_state.clear()
-            st.rerun()
-
-# === Unified Code Editor ===
-st.markdown("---")
-st.header("🐍 Python-Editor & Ausführung")
-
-if "current_file" in st.session_state:
-    st.markdown(f"📄 Aktuelle Datei: `{st.session_state.current_file}`")
-
-editor_input = st.text_area("📝 Code bearbeiten", value=st.session_state.editor_code, height=300, key="editor_text_area")
-
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("💾 Speichern", use_container_width=True):
-        try:
-            if "current_file" in st.session_state:
-                file_manager.save_file(st.session_state.current_file, editor_input)
-                st.session_state.editor_code = editor_input
-                st.success("Datei gespeichert.")
-            else:
-                st.warning("Keine Datei ausgewählt.")
-        except Exception as e:
-            st.error(f"Fehler beim Speichern: {e}")
-
-with col2:
-    if st.button("▶️ Ausführen", use_container_width=True, type="primary"):
-        st.session_state.editor_code = editor_input
-        result = engine.run_code(editor_input)
-        st.session_state.last_execution_result = result
-        st.rerun()
-
-# === Output Display ===
-if st.session_state.last_execution_result:
-    result = st.session_state.last_execution_result
-    if result["success"]:
-        st.success("✅ Code erfolgreich ausgeführt")
-        st.text_area("Ausgabe:", value=result["output"], height=150, disabled=True, key="execution_output_area")
-    else:
-        st.error("❌ Fehler bei der Ausführung")
-        st.text_area("Fehlermeldung:", value=result["error"], height=150, disabled=True, key="execution_error_area")
-        if st.button("🔄 Fehler an Claude senden"):
-            feedback = engine.create_error_feedback(editor_input, result["error"])
-            st.session_state.messages.append({"role": "user", "content": feedback})
-            st.session_state.last_execution_result = None
-            st.rerun()
-
-
-# === Hauptinhalt ===
-st.title("Code-Generator mit Claude")
-chat_manager = ChatManager(input_api_key, model, system_prompt)
-engine = ExecutionEngine()
-
-# === Chat anzeigen ===
-st.header("💬 Chat mit Claude")
-for i, msg in enumerate(st.session_state.messages):
-    role = "assistant" if msg["role"] not in ["user", "assistant"] else msg["role"]
-    with st.chat_message(role):
-        content = msg["content"]
-        if role == "assistant":
-            code_blocks = re.findall(r"```python\s*(.*?)\s*```", content, re.DOTALL)
-            if not code_blocks:
-                st.markdown(content)
-            else:
-                parts = re.split(r"```python\s*|\s*```", content)
-                for idx, part in enumerate(parts):
-                    if idx % 2 == 0:
-                        st.markdown(part)
-                    else:
-                        st.code(part, language="python")
-                        if st.button("📝 In Editor übernehmen", key=f"edit_{i}_{idx}"):
-                            st.session_state.editor_code = part
-                            st.rerun()
+        st.subheader("🔍 Projektordner")
+        if not st.session_state.project_folder:
+            if st.button("📂 Projektordner auswählen"):
+                try:
+                    root = Tk()
+                    root.withdraw()
+                    root.attributes('-topmost', True)
+                    folder_selected = filedialog.askdirectory()
+                    root.destroy()
+                    if folder_selected:
+                        st.session_state.project_folder = folder_selected
+                        st.rerun()
+                except Exception:
+                    st.error("Dateiauswahl nicht möglich: Stelle sicher, dass tkinter installiert ist und du eine lokale Umgebung nutzt.")
         else:
-            st.markdown(content)
+            st.success(f"Aktiv: `{st.session_state.project_folder}`")
+            if st.button("❌ Projekt schließen"):
+                st.session_state.project_folder = None
+                st.session_state.current_file = None
+                st.session_state.editor_code = ""
+                st.session_state.last_execution_result = None
+                st.rerun()
 
-user_input = st.chat_input("Gib deinen Prompt ein...")
-if user_input:
-    st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
-    with st.chat_message("assistant"):
-        placeholder = st.empty()
-        reply = chat_manager.send([m for m in st.session_state.messages if m["role"] in ["user", "assistant"]])
-        placeholder.markdown(reply)
-        st.session_state.messages.append({"role": "assistant", "content": reply})
+def main():
+    initialize_session()
+    input_api_key, model, system_prompt, auto_execute = settings_sidebar()
+    project_folder_sidebar()
+    show_search_bar()
 
-        if auto_execute:
-            match = re.search(r"```python\s*(.*?)\s*```", reply, re.DOTALL)
-            if match:
-                st.session_state.editor_code = match.group(1)
-        st.rerun()
+    chat_manager = ChatManager(input_api_key, model, system_prompt)
+    engine = ExecutionEngine()
 
-# === File Navigation ===
-st.sidebar.subheader("Dateien im Projekt")
-project_dir = st.sidebar.text_input("Projektordner", value=".")
-file_manager = FileManager(root=project_dir)
+    if st.session_state.project_folder:
+        show_file_navigation(st.session_state.project_folder)
+        show_editor()
+        show_execution_area(engine)
+    else:
+        st.markdown("---")
+        st.markdown("### 📂 Kein Projektordner geöffnet")
+        st.markdown("> Wähle links einen Ordner aus, um Dateien zu laden und mit dem Editor zu arbeiten.")
+        st.markdown("""
+<div style="border: 1px solid #ccc; padding: 50px; text-align: center; color: #999;">
+    <h2 style="color: #ccc;">Willkommen im Code-Editor</h2>
+    <p style="color: #bbb;">Keine Datei geöffnet. Öffne einen Projektordner, um loszulegen.</p>
+</div>
+""", unsafe_allow_html=True)
 
-try:
-    files = file_manager.list_files()
-    selected_file = st.sidebar.selectbox("Datei auswählen", files)
+    show_chat_interface(chat_manager, auto_execute)
 
-    if selected_file:
-        file_content = file_manager.read_file(selected_file)
-        st.session_state.editor_code = file_content
-        st.session_state.current_file = selected_file
-except Exception as e:
-    st.sidebar.error(f"Fehler beim Laden der Dateien: {e}")
+if __name__ == "__main__":
+    main()
