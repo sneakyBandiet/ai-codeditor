@@ -1,4 +1,4 @@
-# ui/file_browser.py
+# frontend/file_browser.py
 import os
 import streamlit as st
 from backend.file_manager import FileManager
@@ -22,20 +22,21 @@ class FileViewer:
             if os.path.isdir(full_path):
                 folder_id = rel_path.replace(os.sep, '__')
                 is_expanded = folder_id in st.session_state.expanded_dirs
-                toggle = st.checkbox(f"{base_indent}📁 {entry}", value=is_expanded, key=f"folder_{folder_id}")
+                unique_key = f"folder_{folder_id}_{hash(full_path)}"
+                toggle = st.checkbox(f"{base_indent}📁 {entry}", value=is_expanded, key=unique_key)
                 if toggle:
                     st.session_state.expanded_dirs.add(folder_id)
                     self.render_tree(full_path, base=rel_path)
                 else:
                     st.session_state.expanded_dirs.discard(folder_id)
             elif os.path.isfile(full_path):
-                if st.button(f"{base_indent}📄 {entry}", key=f"file_{rel_path.replace(os.sep, '__')}"):
+                file_key = f"file_{rel_path.replace(os.sep, '__')}_{hash(full_path)}"
+                if st.button(f"{base_indent}📄 {entry}", key=file_key):
                     file_content = self.file_manager.read_file(rel_path)
                     st.session_state.editor_code = file_content
                     st.session_state.current_file = rel_path
 
 
 def show_file_navigation(project_folder):
-    st.markdown("### 📁 Projektdateien")
     viewer = FileViewer(project_folder)
     viewer.render_tree()

@@ -1,5 +1,4 @@
 # backend/file_manager.py
-
 import os
 
 class FileManager:
@@ -10,18 +9,20 @@ class FileManager:
         if extensions is None:
             extensions = [".py", ".js", ".html", ".txt"]
         files = []
-        for fname in os.listdir(self.root):
-            full_path = os.path.join(self.root, fname)
-            if os.path.isfile(full_path) and any(fname.endswith(ext) for ext in extensions):
-                files.append(fname)
+        for dirpath, _, filenames in os.walk(self.root):
+            for fname in filenames:
+                if any(fname.endswith(ext) for ext in extensions):
+                    full_path = os.path.relpath(os.path.join(dirpath, fname), self.root)
+                    files.append(full_path)
         return sorted(files)
 
     def read_file(self, filename):
-        path = os.path.join(self.root, filename)
-        with open(path, "r", encoding="utf-8") as f:
+        filepath = os.path.join(self.root, filename)
+        with open(filepath, "r", encoding="utf-8") as f:
             return f.read()
 
     def save_file(self, filename, content):
-        path = os.path.join(self.root, filename)
-        with open(path, "w", encoding="utf-8") as f:
+        filepath = os.path.join(self.root, filename)
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)

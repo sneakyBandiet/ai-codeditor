@@ -12,15 +12,15 @@ The goal is to create a lightweight code editor that:
 2. Functional Requirements
     • File Display & Management:
         ◦ Features: 
-            ▪ Browse a project directory and list code files (e.g., .py, .js, .html).
-            ▪ Open, edit, and save files within the editor.
+            ▪ Browse a project directory and list code files (e.g., .py, .js, .html). DONE
+            ▪ Open, edit, and save files within the editor. DONE
         ◦ Classes/Functions: 
-            ▪ FileManager: Handles directory traversal, file reading, and saving.
-            ▪ FileViewer: UI component in Streamlit to display file contents.
+            ▪ FileManager: Handles directory traversal, file reading, and saving.DONE
+            ▪ FileViewer: UI component in Streamlit to display file contents. DONE
     • Chat Interface for AI Interaction:
         ◦ Features: 
-            ▪ A chat widget where users can prompt the AI.
-            ▪ Display conversation history between the user and the AI.
+            ▪ A chat widget where users can prompt the AI. DONE
+            ▪ Display conversation history between the user and the AI. DONE
             ▪ Allow the AI to suggest code modifications, answer questions, or help with debugging.
         ◦ Classes/Functions: 
             ▪ ChatManager: Manages chat sessions, history, and interfaces with the AI API.

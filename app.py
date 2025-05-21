@@ -1,16 +1,14 @@
 # app.py
 import streamlit as st
 import os
-import json
 import datetime
 from backend.chat_manager import ChatManager
 from backend.execution_engine import ExecutionEngine
-from backend.file_manager import FileManager
 from tkinter import Tk, filedialog
 
 from frontend.editor import show_editor
 from frontend.chat import show_chat_interface
-from frontend.execution import show_execution_area
+from frontend.execution import show_execution_area, show_file_actions
 from frontend.file_browser import show_file_navigation
 from frontend.search import show_search_bar
 
@@ -30,36 +28,17 @@ def initialize_session():
 def settings_sidebar():
     with st.sidebar:
         st.header("Einstellungen")
-
         input_api_key = st.text_input("Anthropic API-Schlüssel", value=os.getenv("ANTHROPIC_API_KEY", ""), type="password")
         if not input_api_key:
             st.error("Bitte gib einen gültigen Anthropic API-Schlüssel ein.")
-
         model = st.selectbox("Claude-Modell", ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"])
-        system_prompt = st.text_area("System-Prompt", value="Du bist ein hilfreicher KI-Assistent, der Python-Code generiert...", height=200, key="system_prompt_input")
         auto_execute = st.checkbox("Code automatisch in Editor übernehmen", value=True)
-
-        if st.session_state.messages:
-            st.markdown("---")
-            st.subheader("Chat-Verlauf")
-            export_data = {
-                "system_prompt": system_prompt,
-                "model": model,
-                "messages": st.session_state.messages,
-                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            chat_json = json.dumps(export_data, indent=2)
-            st.download_button("Chat-Verlauf herunterladen", chat_json, file_name="chat_history.json")
-            if st.button("Chat-Verlauf löschen"):
-                st.session_state.clear()
-                st.rerun()
-
-        return input_api_key, model, system_prompt, auto_execute
+        return input_api_key, model, auto_execute
 
 def project_folder_sidebar():
     with st.sidebar:
         st.markdown("---")
-        st.subheader("🔍 Projektordner")
+        st.subheader("📁 Projektordner")
         if not st.session_state.project_folder:
             if st.button("📂 Projektordner auswählen"):
                 try:
@@ -82,17 +61,22 @@ def project_folder_sidebar():
                 st.session_state.last_execution_result = None
                 st.rerun()
 
+        st.markdown("---")
+        st.subheader("📁 Projektdateien")
+        if st.session_state.get("project_folder"):
+            show_file_navigation(st.session_state.project_folder)
+
 def main():
     initialize_session()
-    input_api_key, model, system_prompt, auto_execute = settings_sidebar()
+    input_api_key, model, auto_execute = settings_sidebar()
     project_folder_sidebar()
     show_search_bar()
+    show_file_actions()
 
-    chat_manager = ChatManager(input_api_key, model, system_prompt)
+    chat_manager = ChatManager(input_api_key, model, "")
     engine = ExecutionEngine()
 
-    if st.session_state.project_folder:
-        show_file_navigation(st.session_state.project_folder)
+    if st.session_state.get("editor_code") is not None:
         show_editor()
         show_execution_area(engine)
     else:

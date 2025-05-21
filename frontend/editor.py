@@ -1,20 +1,41 @@
-# ui/editor.py
+# frontend/editor.py
+from frontend.file_viewer import FileViewer
 import streamlit as st
 
 def show_editor():
-    st.markdown("---")
-    st.header("🐍 Python-Editor & Ausführung")
+    viewer = FileViewer()
 
-    if "current_file" in st.session_state:
-        st.markdown(f"📄 Aktuelle Datei: `{st.session_state.current_file}`")
+    if "open_files" not in st.session_state:
+        st.session_state.open_files = []
 
-    editor_input = st.text_area("📝 Code bearbeiten", value=st.session_state.editor_code, height=300, key="editor_text_area")
+    current_file = st.session_state.get("current_file")
+    if current_file and current_file not in st.session_state.open_files:
+        st.session_state.open_files.append(current_file)
 
-    uploaded_file = st.file_uploader("📥 Datei hierher ziehen zum Hochladen und Bearbeiten", type=["py", "txt", "html", "js"])
-    if uploaded_file is not None:
-        uploaded_code = uploaded_file.read().decode("utf-8")
-        st.session_state.editor_code = uploaded_code
-        st.session_state.current_file = uploaded_file.name
-        st.success(f"Datei '{uploaded_file.name}' hochgeladen und in den Editor geladen.")
+    open_files = st.session_state.open_files
 
-    st.session_state.editor_code = editor_input
+    if open_files:
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            selected = st.radio("🗂️ Geöffnete Dateien:", open_files, index=open_files.index(current_file), horizontal=True, key="tab_switch")
+        with col2:
+            if st.button("❌ Datei schließen"):
+                if current_file in open_files:
+                    st.session_state.open_files.remove(current_file)
+                    if st.session_state.open_files:
+                        st.session_state.current_file = st.session_state.open_files[0]
+                    else:
+                        st.session_state.current_file = None
+                        st.session_state.editor_code = ""
+                    st.rerun()
+
+        st.session_state.current_file = selected
+        folder = st.session_state.get("project_folder") or st.session_state.get("unsaved_folder")
+        if folder:
+            from backend.file_manager import FileManager
+            file_manager = FileManager(folder)
+            content = file_manager.read_file(selected)
+            updated_code = viewer.render(selected, content)
+            st.session_state.editor_code = updated_code
+    else:
+        st.info("Keine Datei geöffnet.")
