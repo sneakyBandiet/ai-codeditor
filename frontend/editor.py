@@ -34,8 +34,11 @@ def show_editor():
         if folder:
             from backend.file_manager import FileManager
             file_manager = FileManager(folder)
-            content = file_manager.read_file(selected)
-            updated_code = viewer.render(selected, content)
-            st.session_state.editor_code = updated_code
+            if st.session_state.get("editor_code") is None or selected != current_file:
+                content = file_manager.read_file(selected)
+                st.session_state.editor_code = content
+
+        updated_code = viewer.render(selected, st.session_state.editor_code)
+        st.session_state.editor_code = updated_code
     else:
         st.info("Keine Datei geöffnet.")

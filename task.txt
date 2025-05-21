@@ -21,40 +21,40 @@ The goal is to create a lightweight code editor that:
         ◦ Features: 
             ▪ A chat widget where users can prompt the AI. DONE
             ▪ Display conversation history between the user and the AI. DONE
-            ▪ Allow the AI to suggest code modifications, answer questions, or help with debugging.
+            ▪ Allow the AI to suggest code modifications, answer questions, or help with debugging. DONE
         ◦ Classes/Functions: 
-            ▪ ChatManager: Manages chat sessions, history, and interfaces with the AI API.
-            ▪ SystemPrompter: Prepares system-level prompts (including file context) to guide AI responses for more complex tasks.
+            ▪ ChatManager: Manages chat sessions, history, and interfaces with the AI API. DONE
+            ▪ SystemPrompter: Prepares system-level prompts (including file context) to guide AI responses for more complex tasks. DONE
     • File I/O Capabilities:
         ◦ Features: 
-            ▪ Read and load file contents into the editor.
-            ▪ Optionally support file uploads/downloads.
+            ▪ Read and load file contents into the editor. DONE
+            ▪ Optionally support file uploads/downloads. DONE
         ◦ Classes/Functions: 
-            ▪ Integrated within the FileManager and FileViewer components.
+            ▪ Integrated within the FileManager and FileViewer components. DONE
     • Internet Search Integration:
         ◦ Features: 
-            ▪ Mechanism to perform internet searches from within the editor.
-            ▪ Display search results or summaries relevant to the query.
+            ▪ Mechanism to perform internet searches from within the editor.  DONE
+            ▪ Display search results or summaries relevant to the query. DONE
         ◦ Classes/Functions: 
-            ▪ SearchManager: Handles search requests, integrates with external APIs, and processes results.
+            ▪ SearchManager: Handles search requests, integrates with external APIs, and processes results. DONE
     • Code Execution and Debugging:
         ◦ Features: 
-            ▪ Invoke the Python interpreter to run code.
-            ▪ Capture output, errors, and exceptions.
-            ▪ Provide feedback (debugging messages, error logs) to the AI chat.
+            ▪ Invoke the Python interpreter to run code. DONE
+            ▪ Capture output, errors, and exceptions.DONE
+            ▪ Provide feedback (debugging messages, error logs) to the AI chat. DONE
         ◦ Classes/Functions: 
-            ▪ ExecutionEngine: Uses Python’s subprocess module to execute code.
-            ▪ DebugLogger: Captures and formats output and error messages.
+            ▪ ExecutionEngine: Uses Python’s subprocess module to execute code. DONE
+            ▪ DebugLogger: Captures and formats output and error messages.DONE
     • User Interface (Streamlit):
         ◦ Features: 
-            ▪ A sidebar for file navigation.
-            ▪ A main pane for code display and editing.
-            ▪ A dedicated chat window for AI interaction.
-            ▪ An area for displaying code execution results and debugging messages.
+            ▪ A sidebar for file navigation. DONE
+            ▪ A main pane for code display and editing. DONE
+            ▪ A dedicated chat window for AI interaction. DONE
+            ▪ An area for displaying code execution results and debugging messages. DONE
         ◦ Classes/Functions: 
-            ▪ UI functions built with Streamlit widgets (st.sidebar, st.text_area, st.button, etc.).
-            ▪ Functions to update UI components based on interactions with backend modules.
-3. Architectural Plan and Component Interactions
+            ▪ UI functions built with Streamlit widgets (st.sidebar, st.text_area, st.button, etc.). DONE
+            ▪ Functions to update UI components based on interactions with backend modules. DONE
+3. Architectural Plan and Component Interactions DONE
 Before diving into implementation, developers should draft a small architectural diagram or plan. This plan should include:
     • Modules and Their Interactions:
         ◦ Frontend (Streamlit UI): 
@@ -84,29 +84,29 @@ Before diving into implementation, developers should draft a small architectural
         3. Code Execution: User executes code → ExecutionEngine runs code → DebugLogger captures output → UI displays results and sends errors back to ChatManager for AI analysis.
 4. System Prompts & File Context Integration
     • System Prompts:
-        ◦ Define default instructions for the AI (e.g., “You are a code assistant helping to debug Python code.”).
-        ◦ Allow dynamic system prompts based on the user’s current task.
-        ◦ Include safety or sandboxing instructions when executing code.
+        ◦ Define default instructions for the AI (e.g., “You are a code assistant helping to debug Python code.”). DONE
+        ◦ Allow dynamic system prompts based on the user’s current task. DONE
+        ◦ Include safety or sandboxing instructions when executing code. DONE
     • File Context in AI Prompts:
-        ◦ When users request complex tasks (e.g., code optimization or debugging), automatically include relevant file content or snippets.
-        ◦ Develop a mechanism to summarize or selectively extract file context to avoid overwhelming the AI prompt.
-        ◦ The SystemPrompter module should manage this context inclusion by taking parameters such as file name, recent changes, or highlighted code sections.
+        ◦ When users request complex tasks (e.g., code optimization or debugging), automatically include relevant file content or snippets. DONE
+        ◦ Develop a mechanism to summarize or selectively extract file context to avoid overwhelming the AI prompt. 
+        ◦ The SystemPrompter module should manage this context inclusion by taking parameters such as file name, recent changes, or highlighted code sections. 
 5. Development Milestones
     1. Project Setup:
-        ◦ Initialize the project and environment.
-        ◦ Set up Streamlit and install required dependencies.
+        ◦ Initialize the project and environment. DONE
+        ◦ Set up Streamlit and install required dependencies. DONE
     2. UI Development:
-        ◦ Build the sidebar, main code editor, chat interface, and output display using Streamlit.
-        ◦ Ensure dynamic updating based on user interactions.
+        ◦ Build the sidebar, main code editor, chat interface, and output display using Streamlit. DONE
+        ◦ Ensure dynamic updating based on user interactions. DONE
     3. Backend Module Development:
-        ◦ Develop the FileManager and FileViewer for file handling.
-        ◦ Implement ChatManager and SystemPrompter for AI interaction.
-        ◦ Create the SearchManager to handle internet searches.
-        ◦ Build the ExecutionEngine and DebugLogger for code execution and debugging.
+        ◦ Develop the FileManager and FileViewer for file handling. DONE
+        ◦ Implement ChatManager and SystemPrompter for AI interaction. DONE
+        ◦ Create the SearchManager to handle internet searches. DONE
+        ◦ Build the ExecutionEngine and DebugLogger for code execution and debugging. DONE
     4. Integration and Interaction:
-        ◦ Connect UI actions with backend functions.
-        ◦ Ensure that file contexts and system prompts are correctly injected into AI queries.
-        ◦ Validate the complete flow from file loading → chat interaction → code execution → debugging feedback.
+        ◦ Connect UI actions with backend functions. DONE
+        ◦ Ensure that file contexts and system prompts are correctly injected into AI queries. DONE
+        ◦ Validate the complete flow from file loading → chat interaction → code execution → debugging feedback. DONE
     5. Testing, Debugging & Documentation:
         ◦ Write tests for file operations, AI interactions, search integration, and code execution.
         ◦ Gather user feedback, document the architecture and usage, and iterate on improvements.

@@ -1,0 +1,4 @@
+ToDo's:
+- Cosmetic Enhancements for the UI (smaller icons and buttons)
+- CodeEditor on default shown
+- 

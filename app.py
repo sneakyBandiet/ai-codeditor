@@ -26,13 +26,29 @@ def initialize_session():
             st.session_state[key] = value
 
 def settings_sidebar():
+    st.sidebar.markdown("---")
+    theme_mode = st.radio("🌓 Theme", ["Light", "Dark"], horizontal=True)
+    if theme_mode == "Dark":
+        st.markdown("""
+        <style>
+            html, body, [class*='css']  {
+                background-color: #111 !important;
+                color: white !important;
+            }
+            .stTextArea textarea {
+                background-color: #222 !important;
+                color: white !important;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+    st.session_state.editor_height = st.sidebar.slider("🖊️ Editor-Höhe", min_value=200, max_value=1000, value=400, step=50)
     with st.sidebar:
         st.header("Einstellungen")
         input_api_key = st.text_input("Anthropic API-Schlüssel", value=os.getenv("ANTHROPIC_API_KEY", ""), type="password")
         if not input_api_key:
             st.error("Bitte gib einen gültigen Anthropic API-Schlüssel ein.")
         model = st.selectbox("Claude-Modell", ["claude-3-opus-20240229", "claude-3-sonnet-20240229", "claude-3-haiku-20240307"])
-        auto_execute = st.checkbox("Code automatisch in Editor übernehmen", value=True)
+        auto_execute = True
         return input_api_key, model, auto_execute
 
 def project_folder_sidebar():
@@ -78,7 +94,7 @@ def main():
 
     if st.session_state.get("editor_code") is not None:
         show_editor()
-        show_execution_area(engine)
+        show_execution_area(engine, chat_manager)
     else:
         st.markdown("---")
         st.markdown("### 📂 Kein Projektordner geöffnet")
