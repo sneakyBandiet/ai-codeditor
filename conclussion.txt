@@ -1,0 +1,7 @@
+- ohne modularisierung macht die AI fehler beim code generieren -> kleiner files und separierens in klassen hilft enorm
+- chat wird langsamer je länger der kontext wird
+- Serper API gute kostenlose Web API
+- streamlit optimiert selbst und man muss genau beschreiben wo was kommt
+- die ai nimmt dich wortwörtlich
+- ai hält sich nicht an engineering principles automatisch, man muss ihn leiten
+- chatgpt canvas kann besser überarbeitet werden, als das file direkt als upload bereitzustellen
