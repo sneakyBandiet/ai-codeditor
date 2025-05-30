@@ -2,6 +2,7 @@
 import streamlit as st
 
 class FileViewer:
+    """Provides UI for displaying and editing the content of a file in the code editor."""
     def render(self, filename, content):
         if filename:
             st.markdown(f"📄 Aktuelle Datei: `{filename}`")

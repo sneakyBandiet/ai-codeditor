@@ -3,6 +3,7 @@ import streamlit as st
 import requests
 
 class SearchManager:
+    """Render the internet search bar and display search results."""
     def __init__(self, api_key="e14302754ce68371ec396cbff2fd2f0db10cfc35"):
         self.api_key = api_key  # Optional future use
 

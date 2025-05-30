@@ -7,6 +7,7 @@ from tkinter import filedialog
 from backend.file_manager import FileManager
 
 def show_file_actions():
+    """Render the code execution area, output logs, and error handling with AI feedback."""
     with st.expander("📁 Dateioptionen", expanded=False):
         uploaded_file = st.file_uploader("📤 Datei hochladen", type=["py", "txt", "md", "json"])
         if uploaded_file is not None:

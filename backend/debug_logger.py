@@ -1,11 +1,8 @@
 # backend/debug_logger.py
 
 class DebugLogger:
-    """
-    Handles formatting and logging of debugging output and errors.
-    Intended to keep execution logging modular.
-    """
-
+    """Formats and logs output and error messages for code execution.""" 
+    
     def __init__(self):
         self.logs = []
 

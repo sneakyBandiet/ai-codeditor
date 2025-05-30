@@ -3,6 +3,7 @@
 import anthropic
 
 class ChatManager:
+    """Manages chat interactions with the Claude API, including message history and sending prompts."""
     def __init__(self, api_key, model, system_prompt):
         self.api_key = api_key
         self.model = model

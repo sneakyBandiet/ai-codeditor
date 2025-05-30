@@ -5,11 +5,14 @@ Eine moderne, leichtgewichtige Streamlit-Anwendung zum Schreiben, Ausführen und
 ## 🛠️ Installation
 
 1. Klone dieses Repository
+
+2. Erstelle die virtuelle Umgebung:
+      ` python -m venv .venv`
 2. Aktiviere die virtuelle Umgebung:
    - Windows: `venv\Scripts\activate`
    - macOS/Linux: `source venv/bin/activate`
 3. Installiere die Abhängigkeiten:
-   ```bash
+   ```
    pip install -r requirements.txt
    ```
 4. Erstelle eine `.env` Datei und füge deinen Anthropic API-Schlüssel ein:
@@ -40,7 +43,6 @@ Eine moderne, leichtgewichtige Streamlit-Anwendung zum Schreiben, Ausführen und
 - Ergebnisse können Claude als Kontext übergeben werden
 
 ### 🧪 Code-Ausführung & Debugging
-- Python-Code ausführen via `subprocess`
 - Konsolen-Output und Fehlermeldungen werden angezeigt
 - Fehler können automatisch an Claude zur Analyse gesendet werden
 

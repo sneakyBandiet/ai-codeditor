@@ -3,7 +3,9 @@ import os
 import streamlit as st
 from backend.file_manager import FileManager
 
-class FileViewer:
+class FileBrowser:
+    """Handles folders and files browsing"""
+
     def __init__(self, root_path):
         self.file_manager = FileManager(root=root_path)
 
@@ -38,5 +40,5 @@ class FileViewer:
 
 
 def show_file_navigation(project_folder):
-    viewer = FileViewer(project_folder)
+    viewer = FileBrowser(project_folder)
     viewer.render_tree()

@@ -2,6 +2,7 @@
 import os
 
 class FileManager:
+    """Handles file and directory operations like listing, reading, and saving files."""
     def __init__(self, root="."):
         self.root = root
 

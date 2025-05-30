@@ -1,6 +1,7 @@
 # backend/system_prompter.py
 
 class SystemPrompter:
+    """Builds system prompts for the AI, including file context and task-specific instructions."""
     def __init__(self, base_prompt="You are a code assistant helping to debug Python code."):
         self.base_prompt = base_prompt
 

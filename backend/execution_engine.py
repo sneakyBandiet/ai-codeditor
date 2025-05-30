@@ -5,6 +5,7 @@ import contextlib
 import traceback
 
 class ExecutionEngine:
+    """Executes Python code and captures standard output and error."""
     def run_code(self, code):
         stdout_buffer = io.StringIO()
         stderr_buffer = io.StringIO()

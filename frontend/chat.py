@@ -5,6 +5,7 @@ from backend.system_prompter import SystemPrompter
 
 
 def show_chat_interface(chat_manager, auto_execute):
+    """Render the AI chat interface, handle message input and output, and apply AI suggestions to the editor."""
     st.markdown("---")
     st.header("💬 Chat mit Claude")
 
